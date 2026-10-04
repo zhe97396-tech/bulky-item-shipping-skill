@@ -63,14 +63,21 @@ npx bulky-item-shipping \
 
 **输出：**
 
+- 终端：可读的文本报告
+- 📄 **当前目录自动生成 `大件物流比价报告.html`** —— 自包含单文件、零外部依赖、可离线打开 / 打印 / 转发
+
 ```
 【第 1 步】体积重 → 计费重量（三家系数不同）
 【第 2 步】三家的上楼费档位判定 + 金额
 【第 3 步】超长超重 / 不支持上楼的检查
-【下一步】要填进小程序的数据 + 问客服的话术（照念）
+【第 4 步】到手总价对比（用 --quote 填进去）
+【第 5 步】还缺什么 + 行动清单 + 问客服话术
 ```
 
-加 `--json` 得结构化 JSON（给程序 / Agent 解析）。
+> 📌 **HTML 是最终交付物，而且可刷新。**
+> 后续拿到新信息（小程序实价、客服确认、体积复测）时，**重跑同一条命令**即可刷新报告 —— 不要手改 HTML。
+
+加 `--json` 只输出结构化 JSON（不生成 HTML），给程序 / Agent 解析。
 
 > 工具**不算线路运价**（那需要小程序 / 客服询价）。
 > 它保证四项不出错：**体积重、计费重量、上楼费档位、超限风险**。
@@ -109,22 +116,43 @@ Agent 会先问你 6 项信息，再跑 CLI，再出结论。
 | 选项 | 说明 |
 |---|---|
 | `--item <规格>` | `名称:长cm:宽cm:高cm:单件重kg:数量`（可重复）|
-| `--json-file <路径>` | 从 JSON 读取：`{"items":[{"name","l","w","h","weight","count"}],"floor_from":4,"floor_to":6}` |
+| `--json-file <路径>` | 从 JSON 读取货物、楼层、实价、待确认项 |
 | `--floor-from <N>` / `--floor-to <N>` | 起点 / 终点楼层（1 = 一楼）|
 | `--elevator-from` / `--elevator-to` | 该端有可用电梯（则不计上楼费）|
-| `--json` | 输出结构化 JSON |
+| `--from <文本>` / `--to <文本>` | 起点 / 终点描述（写进报告抬头）|
+| `--quote "<承运>=<金额>"` | **到手总价**（可重复）——填进去会自动比较并标出最低 |
+| `--note "<承运>=<备注>"` | 给某个承运加备注 |
+| `--pending "<待确认项>"` | 加入报告里的「还缺什么」（可重复）|
+| `--out <路径>` | HTML 报告输出路径（默认 `./大件物流比价报告.html`）|
+| `--no-html` | 不生成 HTML（只要终端文本）|
+| `--json` | 只输出结构化 JSON |
 | `-h` / `--help`、`-v` / `--version` | 帮助 / 版本 |
+
+### 典型用法：拿到报价后刷新报告
+
+```bash
+npx bulky-item-shipping \
+  --item "纸箱:60:40:50:15:8" --floor-from 4 --floor-to 6 \
+  --from "A 城 B 区（4 楼无电梯）" --to "C 城 D 区（6 楼无电梯）" \
+  --quote "京东（重货标快）=435" --note "京东（重货标快）=小程序实价" \
+  --quote "顺丰（卡航）=571"     --note "顺丰（卡航）=按最高档 1 元/kg" \
+  --pending "体积未量准，计费重量可能上浮" \
+  --out "~/Desktop/大件物流比价报告.html"
+```
+
+报告会自动给出「**推荐：京东，到手约 ¥435 —— 比第二便宜的省 ¥136**」。
 
 ### 也可以当库用
 
 ```js
-const { compute, renderText } = require('bulky-item-shipping');
+const { compute } = require('bulky-item-shipping');
+const { renderHtml } = require('bulky-item-shipping/lib/render-html');
 
 const r = compute(
   [{ name: '纸箱', l: 60, w: 40, h: 50, weight: 15, count: 8 }],
   { floorFrom: 4, floorTo: 6 }
 );
-console.log(renderText(r));
+require('fs').writeFileSync('报告.html', renderHtml(r, { from: 'A', to: 'B' }));
 ```
 
 ---
@@ -137,10 +165,11 @@ CLAUDE.md                     Claude Code 入口（指向 AGENTS.md）
 SKILL.md                      Hermes skill 入口
 README.md                     本文件
 package.json                  npm 包定义
-bin/cli.js                    命令行入口
+bin/cli.js                    命令行入口（含 HTML 输出）
 lib/estimate.js               核心计算（全项目唯一实现）
+lib/render-html.js            HTML 报告渲染器（自包含单文件）
 references/carrier-rules.md   三家规则速查（系数 / 上楼档位 / 超限 / 进位 / 保价）
-templates/report.md           比价报告模板
+templates/report.md           纯 Markdown 备选模板（无 node 环境时手填用）
 ```
 
 ---

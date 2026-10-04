@@ -1,6 +1,6 @@
 {
   "name": "bulky-item-shipping",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "大件物流比价估算（京东/顺丰/德邦）：体积重、计费重量、上楼费档位、超限检查。零依赖。",
   "keywords": [
     "logistics",
