@@ -1,0 +1,42 @@
+{
+  "name": "bulky-item-shipping",
+  "version": "1.0.0",
+  "description": "大件物流比价估算（京东/顺丰/德邦）：体积重、计费重量、上楼费档位、超限检查。零依赖。",
+  "keywords": [
+    "logistics",
+    "shipping",
+    "moving",
+    "quote",
+    "china",
+    "jd",
+    "sf-express",
+    "deppon",
+    "volumetric-weight",
+    "大件物流",
+    "搬家",
+    "比价"
+  ],
+  "license": "MIT",
+  "bin": {
+    "bulky-shipping": "bin/cli.js",
+    "bulky-item-shipping": "bin/cli.js"
+  },
+  "main": "lib/estimate.js",
+  "files": [
+    "bin/",
+    "lib/",
+    "references/",
+    "templates/",
+    "AGENTS.md",
+    "CLAUDE.md",
+    "SKILL.md",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "scripts": {
+    "test": "node bin/cli.js --item \"纸箱:60:40:50:15:8\" --item \"折叠床:100:30:20:20:1\" --floor-from 4 --floor-to 6"
+  }
+}

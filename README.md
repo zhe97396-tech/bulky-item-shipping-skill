@@ -1,8 +1,17 @@
 # 大件物流比价（京东 / 顺丰 / 德邦）
 
-搬家寄大件、跨省运箱子 —— 一个把**京东 / 顺丰 / 德邦**三家的计费规则、上楼费档位、超限条件全部对齐的比价助手。
+搬家寄大件、跨省运箱子 —— 把**京东 / 顺丰 / 德邦**三家的计费规则、上楼费档位、超限条件
+全部对齐的比价工具 + 一套可复用的比价方法。
 
-适用于 [Hermes Agent](https://hermes-agent.nousresearch.com/docs)，也可当纯文档阅读。
+**跨 Agent 通用**：Codex / Cursor / Claude Code / Jules / Amp / Hermes 都能用 ——
+`AGENTS.md` 是通用入口，CLI 是通用执行器。
+
+```
+✅ 跨 Agent（AGENTS.md 标准）
+✅ 零依赖 CLI（node >= 14）
+✅ 可 npx 运行
+✅ 也可纯当文档读
+```
 
 ---
 
@@ -10,81 +19,44 @@
 
 大件物流最坑的不是运价，而是**三家口径不一致 + 一个几乎没人知道的分档机制**：
 
-**① 网上问不到准价。**
+### ① 网上问不到准价
+
 官网默认展示的往往是贵的那档。实测：同一批货，官网「大件次日」912 元起，
 而客服推荐的「卡航」只要 421 元 —— **差一倍，只是产品不同**。
 
-**② 上楼费按「子件结构」分档，不是按总重 —— 这是最贵的坑。**
+→ **官网规则页 + 小程序实填 + 客服电话，三条路都要走。**
+
+### ② 上楼费按「子件结构」分档，不是按总重 —— 这是最贵的坑
 
 | 条件 | 京东（重货标快） | 顺丰（卡航） |
 |---|---|---|
-| 所有件 <60kg 且整票 ≥100kg | **0.3 元/kg** | **0.3 元/kg** |
+| 所有件 &lt;60kg 且整票 ≥100kg | **0.3 元/kg** | **0.3 元/kg** |
 | 任一件 ≥60kg | 0.9 元/kg | 1.0 元/kg |
 
-也就是说：录单时把货填成「一件 150kg」而不是「8 件箱子」，
+录单时把货填成「一件 150kg」而不是「8 件箱子」，
 **同样一批货要多花 105 元**。
-
-**③ 楼层不影响价格。**
-京东官方写「二楼以上（含）及负一层以下（含）」，顺丰写「二楼（含）以上」——
-两家都只界定「算不算上楼」，**没有楼层费率**。
-网上「每层加收 20–50 元」的说法与官方规则不符，不要采信。
-
----
-
-## 三条铁律
-
-### ① 三条路都要走，少一条就拿错价
-
-| 路径 | 拿到什么 | 为什么不能省 |
-|---|---|---|
-| **官网规则页** | 官方标准（系数、档位、限制） | 唯一可引用的依据；客服会口误 |
-| **小程序实填实查** | 到手实价（记得勾「送货上楼」） | 官网默认页往往不是最便宜那档 |
-| **客服电话** | 官网没写的（如取件端收不收费） | 只能靠问 |
-
-### ② 上楼费按「子件结构」分档 → **必须按件申报**
 
 顺丰官方明文支持**子母件**（「若为子母件，则将每件的计费重量进行汇总后计算总运费」）——
 按件申报是承运方自己设计的机制，**不是钻空子**。
 
 ### ③ 计费重量 = max(实重, 体积重)；楼层不加价
 
-体积重 = 长×宽×高 ÷ 轻抛系数。搬家纸箱、被褥通常**体积重更大**，
-只看重量会严重低估。
+京东官方写「二楼以上（含）及负一层以下（含）」，顺丰写「二楼（含）以上」——
+两家都只界定「算不算上楼」，**没有楼层费率**。
+网上「每层加收 20–50 元」的说法与官方规则不符，不要采信。
 
 ---
 
-## 安装（Hermes）
+## 快速开始
+
+### 方式一：npx（推荐）
 
 ```bash
-# 把 <repo-url> 换成本仓库页面上的实际地址
-git clone <repo-url>
-cp -r bulky-item-shipping-skill ~/.hermes/skills/bulky-item-shipping
-```
-
-或者把 `SKILL.md` 放进你 skills 目录下任意名字的文件夹即可。
-当普通文档读也行，只是不会自动触发。
-
----
-
-## 使用
-
-### 方式一：让 Agent 引导（推荐）
-
-对你的 Agent 说：
-
-> 「我要从 ___ 寄一批东西到 ___，帮我比一下京东 / 顺丰 / 德邦」
-
-Agent 会按 `SKILL.md` 的引导先问你 6 项信息（地址与楼层、货物明细、服务要求、
-时效、保价），然后跑脚本、出结论。
-
-### 方式二：自己跑脚本
-
-```bash
-python3 scripts/quote_estimate.py \
-    --item "纸箱:60:40:50:15:8" \
-    --item "物流袋:50:40:40:10:2" \
-    --item "折叠床:100:30:20:20:1" \
-    --floor-from 4 --floor-to 6
+npx bulky-item-shipping \
+  --item "纸箱:60:40:50:15:8" \
+  --item "物流袋:50:40:40:10:2" \
+  --item "折叠床:100:30:20:20:1" \
+  --floor-from 4 --floor-to 6
 ```
 
 `--item` 格式：`名称:长cm:宽cm:高cm:单件重kg:数量`（可重复）
@@ -98,19 +70,88 @@ python3 scripts/quote_estimate.py \
 【下一步】要填进小程序的数据 + 问客服的话术（照念）
 ```
 
-> 脚本**不算线路运价**（那需要联网询价，请用小程序/客服）。
+加 `--json` 得结构化 JSON（给程序 / Agent 解析）。
+
+> 工具**不算线路运价**（那需要小程序 / 客服询价）。
 > 它保证四项不出错：**体积重、计费重量、上楼费档位、超限风险**。
+
+### 方式二：克隆后本地运行
+
+```bash
+git clone <repo-url>
+cd bulky-item-shipping-skill
+node bin/cli.js --item "纸箱:60:40:50:15:8" --floor-from 4 --floor-to 6
+```
+
+### 方式三：让你的 Agent 读 `AGENTS.md`
+
+`AGENTS.md` 是跨 Agent 的通用约定（Codex / Cursor / Jules / Amp 等都读它）。
+把仓库放在 Agent 的工作区里，或把 `AGENTS.md` 内容贴进它的 rules / system prompt。
+
+Agent 会先问你 6 项信息，再跑 CLI，再出结论。
+
+---
+
+## 安装到各 Agent
+
+| Agent | 怎么做 |
+|---|---|
+| **Hermes** | 仓库放到 `~/.hermes/skills/bulky-item-shipping/`（读 `SKILL.md`）|
+| **Claude Code** | 仓库根的 `CLAUDE.md` 会被自动读（指向 `AGENTS.md`）|
+| **Codex / Cursor / Jules / Amp** | 仓库根的 `AGENTS.md` 会被自动读 |
+| **其他 / 通用** | 把 `AGENTS.md` 内容贴进 system prompt 或 rules 文件 |
+| **只要数字** | `npx bulky-item-shipping ...`，任何能跑 shell 的地方都行 |
+
+---
+
+## 命令行选项
+
+| 选项 | 说明 |
+|---|---|
+| `--item <规格>` | `名称:长cm:宽cm:高cm:单件重kg:数量`（可重复）|
+| `--json-file <路径>` | 从 JSON 读取：`{"items":[{"name","l","w","h","weight","count"}],"floor_from":4,"floor_to":6}` |
+| `--floor-from <N>` / `--floor-to <N>` | 起点 / 终点楼层（1 = 一楼）|
+| `--elevator-from` / `--elevator-to` | 该端有可用电梯（则不计上楼费）|
+| `--json` | 输出结构化 JSON |
+| `-h` / `--help`、`-v` / `--version` | 帮助 / 版本 |
+
+### 也可以当库用
+
+```js
+const { compute, renderText } = require('bulky-item-shipping');
+
+const r = compute(
+  [{ name: '纸箱', l: 60, w: 40, h: 50, weight: 15, count: 8 }],
+  { floorFrom: 4, floorTo: 6 }
+);
+console.log(renderText(r));
+```
 
 ---
 
 ## 文件
 
 ```
-SKILL.md                      方法 + 三条铁律 + 引导流程
-references/carrier-rules.md   三家规则速查（系数 / 上楼档位 / 超限 / 保价 / 进位）
-scripts/quote_estimate.py     估算器（纯标准库，零依赖）
+AGENTS.md                     通用 Agent 入口（跨工具标准）
+CLAUDE.md                     Claude Code 入口（指向 AGENTS.md）
+SKILL.md                      Hermes skill 入口
+README.md                     本文件
+package.json                  npm 包定义
+bin/cli.js                    命令行入口
+lib/estimate.js               核心计算（全项目唯一实现）
+references/carrier-rules.md   三家规则速查（系数 / 上楼档位 / 超限 / 进位 / 保价）
 templates/report.md           比价报告模板
 ```
+
+---
+
+## 三条铁律
+
+1. **三条路都要走** —— 官网规则页 + 小程序实填 + 客服电话。少一条就拿错价。
+2. **上楼费按「子件结构」分档** —— 必须**按件申报**。
+3. **计费重量 = max(实重, 体积重)**；**楼层不加价**。
+
+详细规则见 [`references/carrier-rules.md`](./references/carrier-rules.md)。
 
 ---
 
