@@ -1,7 +1,7 @@
 ---
 name: bulky-item-shipping
 description: Use when 寄大件比价. 三路核价+上楼费档位.
-version: 0.1.0
+version: 1.1.0
 license: MIT
 author: Hermes Agent
 metadata:
